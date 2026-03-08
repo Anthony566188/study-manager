@@ -1,0 +1,107 @@
+package br.com.fiap.study_manager.repository;
+
+import br.com.fiap.study_manager.models.PlanItem;
+import br.com.fiap.study_manager.models.StudyPlan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Repository
+public class PlanItemsRepository {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private DataSource dataSource; // O Spring injeta a conexão do application.properties aqui
+
+    // Insere no plano de estudo
+    public void insertPlanItem(PlanItem planItem) {
+
+        // Obter o objeto StudyPlan a partir do planItem
+        StudyPlan studyPlan = planItem.getStudyPlan();
+
+        String sql = "INSERT INTO DB_PLAN_ITEMS " +
+                "(id_study_plan, weekday, start_time, duration_minutes) " +
+                "VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, studyPlan.getId());
+            ps.setString(2, planItem.getWeekday());
+            ps.setTime(3, Time.valueOf(planItem.getStartTime()));
+            ps.setTime(4, Time.valueOf(planItem.getDurationMinutes()));
+
+            ps.executeUpdate();
+
+            log.info("Item do plano de estudo inserido com sucesso!");
+
+        } catch (Exception e) {
+            log.error("Erro ao inserir item no plano de estudo: " + e.getMessage());
+        }
+    }
+
+    // Listar os itens do plano de estudo
+    public List<PlanItem> listItemsPLan(long idStudyPlan) {
+
+        // Cria a lista que vai armazenar os itens do plano de estudo
+        List<PlanItem> planItems = new ArrayList<>();
+
+        String sql = "SELECT * FROM DB_PLAN_ITEMS WHERE id_study_plan = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)){
+
+            // Passando para o 'where' o id do plano de estudo que vem no parâmetro
+            ps.setLong(1, idStudyPlan);
+
+            ResultSet rs = ps.executeQuery();
+
+            /* Pegando os valores dos atributos do banco
+            e passando para os atributos do java */
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                String weekday = rs.getString("weekday");
+                LocalTime startTime = rs.getTime("start_time").toLocalTime();
+                LocalTime durationMinutes = rs.getTime("duration_minutes")
+                        .toLocalTime();
+
+                StudyPlan studyPlan = new StudyPlan(idStudyPlan);
+
+                planItems.add(
+                        new PlanItem(id, studyPlan, weekday, startTime, durationMinutes));
+            }
+
+        } catch (SQLException e) {
+            log.error("Erro ao listar tickets do Paciente.", e);
+        }
+        return planItems;
+    }
+
+    // Exclui um item do plano de estudo
+    public void deletePlanItem(long id){
+
+        String sql = "DELETE FROM DB_PLAN_ITEMS WHERE ID = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            ps.execute();
+
+            log.info("Item do plano de estudo excluído com sucesso!");
+
+        } catch (SQLException e) {
+            log.error("Não foi possível excluir  item do plano de estudo: " + e.getMessage());
+        }
+    }
+
+
+}
