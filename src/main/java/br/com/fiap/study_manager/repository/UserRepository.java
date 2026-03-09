@@ -49,7 +49,7 @@ public class UserRepository {
 
     }
 
-    // Listando usuários
+    // Lista usuários
     public List<User> listUsers(){
 
         List<User> users = new ArrayList<User>();
@@ -77,5 +77,31 @@ public class UserRepository {
         return users;
     }
 
+    // Buscar usuário por id (necessário para a autenticação)
+    public User searchUserById(long idUser) {
+
+        String sql = "SELECT * FROM DB_USERS WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, idUser);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setId(rs.getLong("ID"));
+                    u.setUsername(rs.getString("USERNAME"));
+
+                    return u;
+                }
+            }
+
+
+        } catch (SQLException e) {
+            log.error("Erro ao buscar usuário por ID.", e);
+        }
+        return null;
+    }
 
 }
