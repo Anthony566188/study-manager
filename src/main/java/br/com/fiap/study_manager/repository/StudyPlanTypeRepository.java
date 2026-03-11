@@ -1,5 +1,7 @@
 package br.com.fiap.study_manager.repository;
 
+import br.com.fiap.study_manager.models.PlanItem;
+import br.com.fiap.study_manager.models.StudyPlan;
 import br.com.fiap.study_manager.models.StudyPlanType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +11,11 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 public class StudyPlanTypeRepository {
@@ -39,6 +45,36 @@ public class StudyPlanTypeRepository {
             log.error("Erro ao inserir Estratégia de estudo: " + e.getMessage());
         }
 
+    }
+
+    // Listar todos os tipos de plano de estudo
+    public List<StudyPlanType> listAll() {
+
+        // Cria a lista que vai armazenar os tipos de plano de estudo
+        List<StudyPlanType> studyPlanTypes = new ArrayList<>();
+
+        String sql = "SELECT * FROM DB_STUDY_PLAN_TYPES";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)){
+
+            ResultSet rs = ps.executeQuery();
+
+            /* Pegando os valores dos atributos do banco
+            e passando para os atributos do java */
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                String name = rs.getString("name");
+                String description = rs.getString("description");
+
+                studyPlanTypes.add(
+                        new StudyPlanType(id, name, description));
+            }
+
+        } catch (SQLException e) {
+            log.error("Erro ao listar tipos de plano de estudo: ", e);
+        }
+        return studyPlanTypes;
     }
 
 }

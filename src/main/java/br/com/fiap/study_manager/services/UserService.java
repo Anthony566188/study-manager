@@ -20,7 +20,6 @@ public class UserService {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-    //private final List<User> repository = new ArrayList<>();
 
     public UserAuth addUser(UserAuth userAuth){
         // Capturando o usuário a partir do login passado no paramêtro
@@ -32,7 +31,6 @@ public class UserService {
         // Cadastrando o login
         userAuthRepository.registerAuth(userAuth);
 
-        //repository.add(user);
         return userAuth;
     }
 

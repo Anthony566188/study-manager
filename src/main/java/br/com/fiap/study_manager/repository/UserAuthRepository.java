@@ -31,7 +31,8 @@ public class UserAuthRepository {
         // Obter o objeto User a partir do UserAuth
         User user = userAuth.getUser();
 
-        String sql = "INSERT INTO DB_USER_AUTH (id_user, login, password) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO DB_USER_AUTH (id_user, login, password) " +
+                "VALUES (?, ?, ?)";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -80,6 +81,23 @@ public class UserAuthRepository {
             log.error("Erro ao verificar credenciais: ", e);
         }
         return -1;
+    }
+
+    public UserAuth findByLogin(String login) {
+        String sql = "SELECT login, password FROM DB_USER_AUTH WHERE login = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, login);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Aqui você pode retornar um novo objeto UserAuth com os dados do banco
+                    return new UserAuth(null, rs.getString("login"), rs.getString("password"));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Erro ao buscar login para Spring Security: " + e.getMessage());
+        }
+        return null;
     }
 
 }
