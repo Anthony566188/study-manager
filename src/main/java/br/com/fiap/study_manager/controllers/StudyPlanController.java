@@ -35,6 +35,11 @@ public class StudyPlanController {
         return service.listUserStudyPlan(id_user);
     }
 
-
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteStudyPlan(@PathVariable long id){
+        log.info("Deletando plano de estudo com id {}...", id );
+        service.deleteStudyPlan(id);
+        return ResponseEntity.noContent().build();
+    }
 
 }

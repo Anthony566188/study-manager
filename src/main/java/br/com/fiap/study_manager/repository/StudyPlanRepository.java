@@ -99,7 +99,7 @@ public class StudyPlanRepository {
     // Exclui um plano de estudo
     public void deleteStudyPlan(long id){
 
-        String sql = "DELETE FROM TB_TICKET WHERE ID_TICKET = ?";
+        String sql = "DELETE FROM DB_STUDY_PLANS WHERE ID = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

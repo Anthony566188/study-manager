@@ -25,4 +25,10 @@ public class StudyPlanService {
         return repository.listUserStudyPlans(id_user);
 
     }
+
+    public void deleteStudyPlan(long id) {
+
+        repository.deleteStudyPlan(id);
+
+    }
 }
