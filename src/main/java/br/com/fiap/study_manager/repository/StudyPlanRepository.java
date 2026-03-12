@@ -32,11 +32,13 @@ public class StudyPlanRepository {
         User user = studyPlan.getUser();
 
         String sql = "INSERT INTO DB_STUDY_PLANS " +
-                "(id_study_strategy, id_user, name, description) " +
+                "(id_study_plan_type, id_user, name, description) " +
                 "VALUES (?, ?, ?, ?)";
 
+        String[] returnColumns = { "ID" };
+
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, returnColumns)) {
 
             ps.setLong(1, studyPlanType.getId());
             ps.setLong(2, user.getId());
@@ -44,6 +46,12 @@ public class StudyPlanRepository {
             ps.setString(4, studyPlan.getDescription());
 
             ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                studyPlan.setId(rs.getInt(1));
+            }
+
             log.info("Plano de estudo criado com sucesso!");
 
         } catch (Exception e) {

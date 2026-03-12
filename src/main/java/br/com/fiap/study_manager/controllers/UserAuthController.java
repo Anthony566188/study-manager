@@ -7,12 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")
 public class UserAuthController {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -20,7 +18,7 @@ public class UserAuthController {
     @Autowired
     private UserAuthService service;
 
-    @PostMapping("/auth")
+    @PostMapping
     public User auth(@RequestBody UserAuth credentials){ //Binding do JSON para o objeto User
         log.info("Autenticando usuário...");
         return service.auth(credentials.getLogin(), credentials.getPassword());
