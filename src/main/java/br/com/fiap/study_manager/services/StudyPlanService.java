@@ -5,6 +5,8 @@ import br.com.fiap.study_manager.repository.StudyPlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class StudyPlanService {
 
@@ -14,6 +16,13 @@ public class StudyPlanService {
     public StudyPlan addStudyPlan(StudyPlan studyPlan) {
         repository.insertStudyPlan(studyPlan);
         return studyPlan;
+
+    }
+
+
+    public List<StudyPlan> listUserStudyPlan(long id_user) {
+
+        return repository.listUserStudyPlans(id_user);
 
     }
 }
