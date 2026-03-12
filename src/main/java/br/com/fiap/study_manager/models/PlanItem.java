@@ -13,6 +13,8 @@ public class PlanItem {
 
     private Long id;
     private StudyPlan studyPlan;
+    private Subject subject;
+    private String customTitle;
     private String weekday;
     private LocalTime startTime;
     private Integer durationMinutes;
