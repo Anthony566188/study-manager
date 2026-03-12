@@ -31,15 +31,22 @@ public class PlanItemsRepository {
                 "(id_study_plan, weekday, start_time, duration_minutes) " +
                 "VALUES (?, ?, ?, ?)";
 
+        String[] returnColumns = { "ID" };
+
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, returnColumns)) {
 
             ps.setLong(1, studyPlan.getId());
             ps.setString(2, planItem.getWeekday());
             ps.setTime(3, Time.valueOf(planItem.getStartTime()));
-            ps.setTime(4, Time.valueOf(planItem.getDurationMinutes()));
+            ps.setInt(4, planItem.getDurationMinutes());
 
             ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                planItem.setId(rs.getLong(1));
+            }
 
             log.info("Item do plano de estudo inserido com sucesso!");
 
@@ -70,8 +77,7 @@ public class PlanItemsRepository {
                 long id = rs.getLong("id");
                 String weekday = rs.getString("weekday");
                 LocalTime startTime = rs.getTime("start_time").toLocalTime();
-                LocalTime durationMinutes = rs.getTime("duration_minutes")
-                        .toLocalTime();
+                Integer durationMinutes = rs.getInt("duration_minutes");
 
                 StudyPlan studyPlan = new StudyPlan(idStudyPlan);
 

@@ -1,9 +1,7 @@
 package br.com.fiap.study_manager.controllers;
 
 import br.com.fiap.study_manager.models.StudyPlan;
-import br.com.fiap.study_manager.models.StudyPlanType;
 import br.com.fiap.study_manager.services.StudyPlanService;
-import br.com.fiap.study_manager.services.StudyPlanTypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
