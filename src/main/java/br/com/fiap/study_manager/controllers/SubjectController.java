@@ -1,6 +1,5 @@
 package br.com.fiap.study_manager.controllers;
 
-import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.Subject;
 import br.com.fiap.study_manager.services.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
