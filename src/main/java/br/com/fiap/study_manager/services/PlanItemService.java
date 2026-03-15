@@ -1,5 +1,7 @@
 package br.com.fiap.study_manager.services;
 
+import br.com.fiap.study_manager.exceptions.BusinessException;
+import br.com.fiap.study_manager.exceptions.ResourceNotFoundException;
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.StudyPlan;
 import br.com.fiap.study_manager.repository.PlanItemsRepository;
@@ -24,4 +26,17 @@ public class PlanItemService {
 
     }
 
+    public PlanItem updatePlanItem(Long id, PlanItem planItem) {
+        PlanItem existing = repository.findById(id)
+                .orElseThrow(() -> 
+                new ResourceNotFoundException("PlanItem não encontrado com id: " + id));
+
+        existing.setSubject(planItem.getSubject());
+        existing.setCustomTitle(planItem.getCustomTitle());
+        existing.setWeekday(planItem.getWeekday());
+        existing.setStartTime(planItem.getStartTime());
+        existing.setDurationMinutes(planItem.getDurationMinutes());
+
+        return repository.save(existing);
+    }
 }
