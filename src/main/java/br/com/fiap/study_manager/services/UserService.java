@@ -4,6 +4,7 @@ import br.com.fiap.study_manager.models.User;
 import br.com.fiap.study_manager.models.UserAuth;
 import br.com.fiap.study_manager.repository.UserAuthRepository;
 import br.com.fiap.study_manager.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class UserService {
     @Autowired
     private UserAuthRepository userAuthRepository;
 
-
+    @Transactional
     public UserAuth addUser(UserAuth userAuth){
         // Capturando o usuário a partir do login passado no paramêtro
         User user = userAuth.getUser();

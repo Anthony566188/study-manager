@@ -113,28 +113,51 @@ public class StudyPlanRepository {
         return studyPlans;
     }
 
-    // Exclui um plano de estudo
+    // Exclui um plano de estudo e seu itens
     public int deleteStudyPlan(long id){
 
-        String sql = "DELETE FROM DB_STUDY_PLANS WHERE ID = ?";
+        String sqlDeleteItems = "DELETE FROM DB_PLAN_ITEMS WHERE ID_STUDY_PLAN = ?";
+        String sqlDeletePlan = "DELETE FROM DB_STUDY_PLANS WHERE ID = ?";
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection()) {
 
-            ps.setLong(1, id);
-            int rows = ps.executeUpdate();
+            // Desliga o auto-commit para agrupar as duas operações em uma única transação
+            conn.setAutoCommit(false);
 
-            if (rows > 0) {
-                log.info("Plano de estudo excluído com sucesso!");
-            } else {
-                log.info("Nenhum plano de estudo encontrado para exclusão. ID: {}", id);
+            try (PreparedStatement psItems = conn.prepareStatement(sqlDeleteItems);
+                 PreparedStatement psPlan = conn.prepareStatement(sqlDeletePlan)) {
+
+                // Exclui os itens do plano primeiro
+                psItems.setLong(1, id);
+                psItems.executeUpdate();
+
+                // Exclui o plano de estudo propriamente dito
+                psPlan.setLong(1, id);
+                int rows = psPlan.executeUpdate();
+
+                // Se tudo deu certo, confirma as duas exclusões no banco
+                conn.commit();
+
+                if (rows > 0) {
+                    log.info("Plano de estudo e seus itens excluídos com sucesso!");
+                } else {
+                    log.info("Nenhum plano de estudo encontrado para exclusão. ID: {}", id);
+                }
+
+                return rows;
+            } catch (SQLException e) {
+                // Se der erro em qualquer um dos deletes, desfaz tudo (rollback) para não deixar dados inconsistentes
+                conn.rollback();
+                log.error("Erro durante a exclusão. Transação revertida.", e);
+                throw new RuntimeException("Não foi possível excluir o plano de estudo.", e);
+            } finally {
+                // Restaura o autocommit para o padrão da connection pool
+                conn.setAutoCommit(true);
             }
 
-            return rows;
-
         } catch (SQLException e) {
-            log.error("Não foi possível excluir o plano de estudo.", e);
-            throw new RuntimeException("Não foi possível excluir o plano de estudo.", e);
+            log.error("Erro de conexão ao excluir o plano de estudo.", e);
+            throw new RuntimeException("Erro de conexão ao excluir o plano de estudo.", e);
         }
     }
 
