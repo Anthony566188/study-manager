@@ -161,4 +161,68 @@ public class StudyPlanRepository {
         }
     }
 
+    // Atualiza nome e descrição de um plano de estudo
+    public int updateStudyPlan(long id, String name, String description) {
+        String sql = "UPDATE DB_STUDY_PLANS SET name = ?, description = ? WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, name);
+            ps.setString(2, description);
+            ps.setLong(3, id);
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                log.info("Plano de estudo atualizado com sucesso! ID: {}", id);
+            }
+            return rows;
+
+        } catch (SQLException e) {
+            log.error("Erro ao atualizar plano de estudo.", e);
+            throw new RuntimeException("Erro ao atualizar plano de estudo.", e);
+        }
+    }
+
+    // Busca um plano de estudo pelo id (para retornar o recurso atualizado)
+    public StudyPlan findById(long id) {
+        String sql = "SELECT sp.id, sp.name, sp.description, " +
+                "spt.id AS spt_id, spt.name AS spt_name, spt.description AS spt_description, " +
+                "u.id AS u_id, u.username AS u_username " +
+                "FROM DB_STUDY_PLANS sp " +
+                "INNER JOIN DB_STUDY_PLAN_TYPES spt ON sp.id_study_plan_type = spt.id " +
+                "INNER JOIN DB_USERS u ON sp.id_user = u.id " +
+                "WHERE sp.id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                long planId = rs.getLong("id");
+                String name = rs.getString("name");
+                String description = rs.getString("description");
+
+                long idStudyPlanType = rs.getLong("spt_id");
+                String sptName = rs.getString("spt_name");
+                String sptDescription = rs.getString("spt_description");
+                StudyPlanType studyPlanType =
+                        new StudyPlanType(idStudyPlanType, sptName, sptDescription);
+
+                long userId = rs.getLong("u_id");
+                String username = rs.getString("u_username");
+                User user = new User(userId, username);
+
+                return new StudyPlan(planId, studyPlanType, user, name, description);
+            }
+            return null;
+
+        } catch (SQLException e) {
+            log.error("Erro ao buscar plano de estudo por id.", e);
+            throw new RuntimeException("Erro ao buscar plano de estudo por id.", e);
+        }
+    }
+
 }

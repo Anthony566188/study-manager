@@ -40,4 +40,17 @@ public class StudyPlanService {
         }
 
     }
+
+    public StudyPlan updateStudyPlan(Long id, StudyPlan studyPlan) {
+        if (studyPlan.getName() == null || studyPlan.getName().isBlank()) {
+            throw new BusinessException("Nome do plano de estudo é obrigatório");
+        }
+
+        int rows = repository.updateStudyPlan(id, studyPlan.getName(), studyPlan.getDescription());
+        if (rows == 0) {
+            throw new ResourceNotFoundException("Plano de estudo com id " + id + " não encontrado");
+        }
+
+        return repository.findById(id);
+    }
 }

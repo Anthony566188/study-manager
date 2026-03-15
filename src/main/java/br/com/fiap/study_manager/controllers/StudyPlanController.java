@@ -40,4 +40,10 @@ public class StudyPlanController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("{id}")
+    public ResponseEntity<StudyPlan> updateStudyPlan(@PathVariable Long id, @RequestBody StudyPlan studyPlan){
+        log.info("Atualizando plano de estudo com id {} com os dados {}", id, studyPlan);
+        return ResponseEntity.ok( service.updateStudyPlan(id, studyPlan) );
+    }
+
 }
