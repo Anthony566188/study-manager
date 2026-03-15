@@ -66,7 +66,14 @@ public class StudyPlanRepository {
         // Cria a lista que vai armazenar os planos de estudos
         List<StudyPlan> studyPlans = new ArrayList<>();
 
-        String sql = "SELECT * FROM DB_STUDY_PLANS WHERE id_user = ?";
+        // Adicionando os JOINs para buscar os dados de Usuario e Tipo de Plano
+        String sql = "SELECT sp.id, sp.name, sp.description, " +
+                "spt.id AS spt_id, spt.name AS spt_name, spt.description AS spt_description, " +
+                "u.id AS u_id, u.username AS u_username " +
+                "FROM DB_STUDY_PLANS sp " +
+                "INNER JOIN DB_STUDY_PLAN_TYPES spt ON sp.id_study_plan_type = spt.id " +
+                "INNER JOIN DB_USERS u ON sp.id_user = u.id " +
+                "WHERE sp.id_user = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)){
@@ -80,12 +87,20 @@ public class StudyPlanRepository {
             e passando para os atributos do java */
             while (rs.next()) {
                 long id = rs.getLong("id");
-                long idStudyPlanType = rs.getLong("id_study_plan_type");
                 String name = rs.getString("name");
                 String description = rs.getString("description");
 
-                StudyPlanType studyPlanType = new StudyPlanType(idStudyPlanType);
-                User user = new User(idUser);
+                // Populando o StudyPlanType completo
+                long idStudyPlanType = rs.getLong("spt_id");
+                String sptName = rs.getString("spt_name");
+                String sptDescription = rs.getString("spt_description");
+                StudyPlanType studyPlanType =
+                        new StudyPlanType(idStudyPlanType, sptName, sptDescription);
+
+                // Populando o User completo
+                long userId = rs.getLong("u_id");
+                String username = rs.getString("u_username");
+                User user = new User(userId, username);
 
                 studyPlans.add(
                         new StudyPlan(id, studyPlanType, user, name, description));
