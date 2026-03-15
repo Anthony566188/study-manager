@@ -41,7 +41,11 @@ public class PlanItemsRepository {
              PreparedStatement ps = conn.prepareStatement(sql, returnColumns)) {
 
             ps.setLong(1, studyPlan.getId());
-            ps.setNull(2, INTEGER); // Apenas para teste
+            if (planItem.getSubject() == null){
+                ps.setNull(2, INTEGER);
+            } else {
+                ps.setLong(2, subject.getId());
+            }
             ps.setString(3, planItem.getCustomTitle());
             ps.setString(4, planItem.getWeekday());
             ps.setTime(5, Time.valueOf(planItem.getStartTime()));

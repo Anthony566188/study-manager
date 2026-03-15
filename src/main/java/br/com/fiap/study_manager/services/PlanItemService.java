@@ -14,14 +14,6 @@ public class PlanItemService {
 
     public PlanItem addPlanItem(PlanItem planItem) {
 
-        if (planItem.getSubject() == null) {
-            Subject subject = new Subject();
-
-            subject.setId(0l);
-
-            planItem.setSubject(subject);
-        }
-
         repository.insertPlanItem(planItem);
         return planItem;
 
