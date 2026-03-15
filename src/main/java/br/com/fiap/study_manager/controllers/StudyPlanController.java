@@ -27,10 +27,10 @@ public class StudyPlanController {
                 .body(service.addStudyPlan(studyPlan));
     }
 
-    @GetMapping("/{id_user}")
-    public List<StudyPlan> listUserStudyPlan(@PathVariable long id_user){
-        log.info("Listando os planos de estudo do usuário de id {}...", id_user);
-        return service.listUserStudyPlan(id_user);
+    @GetMapping("/{idUser}")
+    public List<StudyPlan> listUserStudyPlan(@PathVariable long idUser){
+        log.info("Listando os planos de estudo do usuário de id {}...", idUser);
+        return service.listUserStudyPlan(idUser);
     }
 
     @DeleteMapping("{id}")
