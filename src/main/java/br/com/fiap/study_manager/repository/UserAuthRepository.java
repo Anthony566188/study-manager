@@ -48,7 +48,8 @@ public class UserAuthRepository {
             log.info("Login do Usuário criado com sucesso!");
 
         } catch (Exception e) {
-            log.error("Erro ao inserir o Login do Usuário: " + e.getMessage());
+            log.error("Erro ao inserir o Login do Usuário.", e);
+            throw new RuntimeException("Erro ao inserir o Login do Usuário.", e);
         }
 
     }
@@ -79,6 +80,7 @@ public class UserAuthRepository {
 
         } catch (SQLException e) {
             log.error("Erro ao verificar credenciais: ", e);
+            throw new RuntimeException("Erro ao verificar credenciais.", e);
         }
         return -1;
     }
@@ -96,6 +98,7 @@ public class UserAuthRepository {
             }
         } catch (SQLException e) {
             log.error("Erro ao buscar login para Spring Security: " + e.getMessage());
+            throw new RuntimeException("Erro ao buscar login para Spring Security.", e);
         }
         return null;
     }

@@ -49,13 +49,14 @@ public class StudyPlanRepository {
 
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                studyPlan.setId(rs.getInt(1));
+                studyPlan.setId(rs.getLong(1));
             }
 
             log.info("Plano de estudo criado com sucesso!");
 
-        } catch (Exception e) {
-            log.error("Erro ao inserir Plano de Estudo: " + e.getMessage());
+        } catch (SQLException e) {
+            log.error("Erro ao inserir Plano de Estudo.", e);
+            throw new RuntimeException("Erro ao inserir Plano de Estudo.", e);
         }
 
     }
@@ -91,13 +92,14 @@ public class StudyPlanRepository {
             }
 
         } catch (SQLException e) {
-            log.error("Erro ao listar tickets do Paciente.", e);
+            log.error("Erro ao listar planos de estudo do usuário.", e);
+            throw new RuntimeException("Erro ao listar planos de estudo do usuário.", e);
         }
         return studyPlans;
     }
 
     // Exclui um plano de estudo
-    public void deleteStudyPlan(long id){
+    public int deleteStudyPlan(long id){
 
         String sql = "DELETE FROM DB_STUDY_PLANS WHERE ID = ?";
 
@@ -105,12 +107,19 @@ public class StudyPlanRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
-            ps.execute();
+            int rows = ps.executeUpdate();
 
-            log.info("Plano de estudo excluído com sucesso!");
+            if (rows > 0) {
+                log.info("Plano de estudo excluído com sucesso!");
+            } else {
+                log.info("Nenhum plano de estudo encontrado para exclusão. ID: {}", id);
+            }
+
+            return rows;
 
         } catch (SQLException e) {
-            log.error("Não foi possível excluir o plano de estudo: " + e.getMessage());
+            log.error("Não foi possível excluir o plano de estudo.", e);
+            throw new RuntimeException("Não foi possível excluir o plano de estudo.", e);
         }
     }
 

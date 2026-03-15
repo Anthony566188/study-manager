@@ -45,7 +45,8 @@ public class SubjectRepository {
             log.info("Assunto inserido com sucesso!");
 
         } catch (SQLException e) {
-            log.error("Erro ao inserir Assunto: " + e.getMessage());
+            log.error("Erro ao inserir Assunto.", e);
+            throw new RuntimeException("Erro ao inserir Assunto.", e);
         }
 
     }

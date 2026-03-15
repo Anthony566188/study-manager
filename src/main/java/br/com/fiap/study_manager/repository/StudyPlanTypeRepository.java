@@ -40,7 +40,8 @@ public class StudyPlanTypeRepository {
             log.info("Estratégia de estudo inserida com sucesso!");
 
         } catch (SQLException e) {
-            log.error("Erro ao inserir Estratégia de estudo: " + e.getMessage());
+            log.error("Erro ao inserir Estratégia de estudo.", e);
+            throw new RuntimeException("Erro ao inserir Estratégia de estudo.", e);
         }
 
     }
@@ -71,6 +72,7 @@ public class StudyPlanTypeRepository {
 
         } catch (SQLException e) {
             log.error("Erro ao listar tipos de plano de estudo: ", e);
+            throw new RuntimeException("Erro ao listar tipos de plano de estudo.", e);
         }
         return studyPlanTypes;
     }

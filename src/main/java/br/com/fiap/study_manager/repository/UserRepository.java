@@ -38,13 +38,14 @@ public class UserRepository {
 
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                user.setId(rs.getInt(1));
+                user.setId(rs.getLong(1));
             }
 
             log.info("Usuario inserido com sucesso!");
 
         } catch (SQLException e) {
-            log.error("Erro ao inserir Usuário: " + e.getMessage());
+            log.error("Erro ao inserir Usuário.", e);
+            throw new RuntimeException("Erro ao inserir Usuário.", e);
         }
 
     }
@@ -72,7 +73,8 @@ public class UserRepository {
             }
 
         } catch (SQLException e) {
-            log.error("Erro ao listar usuários!" + e.getMessage());
+            log.error("Erro ao listar usuários!", e);
+            throw new RuntimeException("Erro ao listar usuários!", e);
         }
         return users;
     }
@@ -100,6 +102,7 @@ public class UserRepository {
 
         } catch (SQLException e) {
             log.error("Erro ao buscar usuário por ID.", e);
+            throw new RuntimeException("Erro ao buscar usuário por ID.", e);
         }
         return null;
     }
