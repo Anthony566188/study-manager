@@ -2,7 +2,7 @@ package br.com.fiap.study_manager.services;
 
 import br.com.fiap.study_manager.exceptions.BusinessException;
 import br.com.fiap.study_manager.models.Subject;
-import br.com.fiap.study_manager.repository.SubjectRepository;
+import br.com.fiap.study_manager.repositories.SubjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

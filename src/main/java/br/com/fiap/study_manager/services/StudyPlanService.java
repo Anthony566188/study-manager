@@ -3,7 +3,7 @@ package br.com.fiap.study_manager.services;
 import br.com.fiap.study_manager.exceptions.BusinessException;
 import br.com.fiap.study_manager.exceptions.ResourceNotFoundException;
 import br.com.fiap.study_manager.models.StudyPlan;
-import br.com.fiap.study_manager.repository.StudyPlanRepository;
+import br.com.fiap.study_manager.repositories.StudyPlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

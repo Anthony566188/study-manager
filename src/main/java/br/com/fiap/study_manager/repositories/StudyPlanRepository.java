@@ -1,4 +1,4 @@
-package br.com.fiap.study_manager.repository;
+package br.com.fiap.study_manager.repositories;
 
 import br.com.fiap.study_manager.models.StudyPlan;
 import br.com.fiap.study_manager.models.StudyPlanType;

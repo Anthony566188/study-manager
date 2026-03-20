@@ -1,4 +1,4 @@
-package br.com.fiap.study_manager.repository;
+package br.com.fiap.study_manager.repositories;
 
 import br.com.fiap.study_manager.models.PlanItem;
 import org.springframework.data.jpa.repository.JpaRepository;

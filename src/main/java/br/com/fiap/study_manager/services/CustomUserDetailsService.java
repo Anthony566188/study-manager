@@ -1,7 +1,7 @@
 package br.com.fiap.study_manager.services;
 
 import br.com.fiap.study_manager.models.UserAuth;
-import br.com.fiap.study_manager.repository.UserAuthRepository;
+import br.com.fiap.study_manager.repositories.UserAuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,16 +17,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
-        UserAuth auth = repository.findByLogin(login);
-
-        if (auth == null) {
-            throw new UsernameNotFoundException("Usuário não encontrado: " + login);
-        }
+        UserAuth auth = repository.findByLogin(login)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + login));
 
         return User.builder()
                 .username(auth.getLogin())
                 .password(auth.getPassword())
-                .roles("USER") // Define um papel padrão
+                .roles("USER")
                 .build();
     }
 }

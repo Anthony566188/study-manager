@@ -1,4 +1,4 @@
-package br.com.fiap.study_manager.repository;
+package br.com.fiap.study_manager.repositories;
 
 import br.com.fiap.study_manager.models.StudyPlanType;
 import org.slf4j.Logger;
@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
