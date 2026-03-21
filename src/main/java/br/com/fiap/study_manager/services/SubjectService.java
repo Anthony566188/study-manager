@@ -6,6 +6,8 @@ import br.com.fiap.study_manager.repositories.SubjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class SubjectService {
 
@@ -18,8 +20,13 @@ public class SubjectService {
             throw new BusinessException("Nome da matéria é obrigatório");
         }
 
-        repository.insertSubject(subject);
-        return subject;
+        return repository.save(subject);
+
+    }
+
+    public List<Subject> getAllUserSubjects(Long idUser) {
+
+        return repository.findByUserId(idUser);
 
     }
 }

@@ -1,6 +1,5 @@
 package br.com.fiap.study_manager.services;
 
-import br.com.fiap.study_manager.exceptions.ResourceNotFoundException;
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.repositories.PlanItemsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,7 @@ public class PlanItemService {
     }
 
     public PlanItem updatePlanItem(Long id, PlanItem planItem) {
-        
+
         PlanItem existing = findItemById(id);
 
         existing.setSubject(planItem.getSubject());
