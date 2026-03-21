@@ -4,7 +4,9 @@ import br.com.fiap.study_manager.exceptions.ResourceNotFoundException;
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.repositories.PlanItemsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,9 +27,8 @@ public class PlanItemService {
     }
 
     public PlanItem updatePlanItem(Long id, PlanItem planItem) {
-        PlanItem existing = repository.findById(id)
-                .orElseThrow(() -> 
-                new ResourceNotFoundException("PlanItem não encontrado com id: " + id));
+        
+        PlanItem existing = findItemById(id);
 
         existing.setSubject(planItem.getSubject());
         existing.setCustomTitle(planItem.getCustomTitle());
@@ -37,4 +38,17 @@ public class PlanItemService {
 
         return repository.save(existing);
     }
+
+    public void deletePlanItem(Long id) {
+
+        repository.deleteById(id);
+
+    }
+
+    private PlanItem findItemById(Long id){
+        return repository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item de id " + id + " não encontrado")
+        );
+    }
+
 }

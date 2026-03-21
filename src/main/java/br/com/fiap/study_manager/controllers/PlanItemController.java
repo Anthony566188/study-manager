@@ -34,6 +34,13 @@ public class PlanItemController {
         return service.listItems(idStudyPlan);
     }
 
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deletePlanItem(@PathVariable Long id) {
+        log.info("Deletando item de id {}...", id );
+        service.deletePlanItem(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("{id}")
     public ResponseEntity<PlanItem>
     updatePlanItem(@PathVariable Long id, @RequestBody PlanItem planItem){
