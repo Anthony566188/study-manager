@@ -29,4 +29,10 @@ public class SubjectService {
         return repository.findByUserId(idUser);
 
     }
+
+    public void deleteSubject(Long id) {
+
+        repository.deleteById(id);
+
+    }
 }

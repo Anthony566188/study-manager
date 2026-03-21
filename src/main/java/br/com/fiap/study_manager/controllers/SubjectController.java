@@ -33,4 +33,11 @@ public class SubjectController {
         return service.getAllUserSubjects(idUser);
     }
 
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
+        log.info("Deletando subject com id {}", id );
+        service.deleteSubject(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
