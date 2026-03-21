@@ -40,4 +40,10 @@ public class SubjectController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("{id}")
+    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @RequestBody Subject subject){
+        log.info("Atualizando subject de id {} com os dados {}", id, subject);
+        return ResponseEntity.ok( service.updateSubject(id, subject) );
+    }
+
 }
