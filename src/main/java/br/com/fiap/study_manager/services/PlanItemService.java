@@ -29,6 +29,25 @@ public class PlanItemService {
 
     public PlanItem addPlanItem(PlanItem planItem) {
 
+        // Busca o plano para saber qual é o tipo
+        StudyPlan plan = studyPlanRepository.findById(planItem.getStudyPlan().getId());
+        String tipoPlano = plan.getStudyPlanType().getName();
+
+        // Validação exclusiva para 'Rotina Semanal'
+        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            boolean conflito = repository.existsByStudyPlanIdAndWeekdayAndStartTime(
+                    plan.getId(),
+                    planItem.getWeekday(),
+                    planItem.getStartTime()
+            );
+
+            if (conflito) {
+                // Retorna 409 Conflict abortando a requisição
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Já existe um item agendado para este dia e horário na sua Rotina Semanal.");
+            }
+        }
+
         // Salva o item recém-chegado
         PlanItem saved = repository.save(planItem);
 
@@ -50,6 +69,26 @@ public class PlanItemService {
 
         PlanItem existing = findItemById(id);
         Long planId = existing.getStudyPlan().getId();
+
+        StudyPlan plan = studyPlanRepository.findById(planId);
+        String tipoPlano = plan.getStudyPlanType().getName();
+
+        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            // Só faz a validação de conflito se o usuário estiver TENTANDO MUDAR o dia ou o horário
+            if (existing.getWeekday() != planItem.getWeekday() || !existing.getStartTime().equals(planItem.getStartTime())) {
+
+                boolean conflito = repository.existsByStudyPlanIdAndWeekdayAndStartTime(
+                        planId,
+                        planItem.getWeekday(),
+                        planItem.getStartTime()
+                );
+
+                if (conflito) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Já existe um item agendado para este dia e horário na sua Rotina Semanal.");
+                }
+            }
+        }
 
         // Se o usuário mudou o dia da semana, precisamos recalcular o dia antigo E o dia novo!
         Weekday oldDay = existing.getWeekday();

@@ -47,5 +47,21 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleResponseStatusException(
+            org.springframework.web.server.ResponseStatusException ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                ex.getStatusCode().value(),
+                "Conflict",
+                ex.getReason(), 
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(ex.getStatusCode()).body(error);
+    }
+
 }
 
