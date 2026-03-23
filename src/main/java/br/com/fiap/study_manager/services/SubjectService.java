@@ -40,9 +40,9 @@ public class SubjectService {
     }
 
     public Subject updateSubject(Long id, Subject newSubject) {
-        //BeanUtils.copyProperties(newMovie, movie, "id");
+        //BeanUtils.copyProperties(newSubject, subject, "id");
         newSubject.setId(id);
         return repository.save(newSubject);
     }
-    
+
 }
