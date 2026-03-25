@@ -2,6 +2,7 @@ package br.com.fiap.study_manager.repositories;
 
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.enums.Weekday;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,5 +28,11 @@ public interface PlanItemsRepository extends JpaRepository<PlanItem, Long> {
     @Modifying
     @Query("update PlanItem p set p.subject = null where p.subject.id = :subjectId")
     int nullifySubjectForSubjectId(Long subjectId);
+
+    // Deleta todos os itens baseados no id do plano de estudo
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PlanItem p WHERE p.studyPlan.id = :studyPlanId")
+    void deleteByStudyPlanId(Long studyPlanId);
 
 }

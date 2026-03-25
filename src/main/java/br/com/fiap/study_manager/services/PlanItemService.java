@@ -30,7 +30,7 @@ public class PlanItemService {
     public PlanItem addPlanItem(PlanItem planItem) {
 
         // Busca o plano para saber qual é o tipo
-        StudyPlan plan = studyPlanRepository.findById(planItem.getStudyPlan().getId());
+        StudyPlan plan = findStudyPlanById(planItem.getStudyPlan().getId());
         String tipoPlano = plan.getStudyPlanType().getName();
 
         // Validação exclusiva para 'Rotina Semanal'
@@ -70,7 +70,7 @@ public class PlanItemService {
         PlanItem existing = findItemById(id);
         Long planId = existing.getStudyPlan().getId();
 
-        StudyPlan plan = studyPlanRepository.findById(planId);
+        StudyPlan plan = findStudyPlanById(planId);
         String tipoPlano = plan.getStudyPlanType().getName();
 
         if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
@@ -129,7 +129,7 @@ public class PlanItemService {
     private void recalculateDurations(Long idStudyPlan, Weekday weekday) {
 
         // Descobre qual é o tipo do plano
-        StudyPlan plan = studyPlanRepository.findById(idStudyPlan);
+        StudyPlan plan = findStudyPlanById(idStudyPlan);
         String tipoPlano = plan.getStudyPlanType().getName();
 
         // Se for Ciclo, ABORTA o cálculo automático, pois o usuário digita a duração na mão
@@ -167,8 +167,14 @@ public class PlanItemService {
 
     private PlanItem findItemById(Long id){
         return repository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item de id " + id + " não encontrado")
-        );
+                () -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Item de id " + id + " não encontrado"));
+    }
+
+    private StudyPlan findStudyPlanById(Long id) {
+        return studyPlanRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Plano de estudo com id " + id + " não encontrado"));
     }
 
 }
