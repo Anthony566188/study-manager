@@ -13,5 +13,7 @@ public interface StudyBalanceRepository extends JpaRepository<StudyBalance, Long
 
     List<StudyBalance> findByUserId(Long User);
 
+    void deleteBySubject_Id(Long subjectId);
+
 
 }

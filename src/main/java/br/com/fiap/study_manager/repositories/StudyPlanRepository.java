@@ -116,6 +116,11 @@ public class StudyPlanRepository {
     // Exclui um plano de estudo e seu itens
     public int deleteStudyPlan(long id){
 
+        // IMPORTANTE: DB_STUDY_SESSIONS referencia DB_PLAN_ITEMS (FK -> ID_PLAN_ITEM).
+        // Então precisamos deletar as sessões ANTES de deletar os itens do plano,
+        // para não estourar constraint de integridade referencial.
+        String sqlDeleteSessions = "DELETE FROM DB_STUDY_SESSIONS " +
+                "WHERE ID_PLAN_ITEM IN (SELECT ID FROM DB_PLAN_ITEMS WHERE ID_STUDY_PLAN = ?)";
         String sqlDeleteItems = "DELETE FROM DB_PLAN_ITEMS WHERE ID_STUDY_PLAN = ?";
         String sqlDeletePlan = "DELETE FROM DB_STUDY_PLANS WHERE ID = ?";
 
@@ -125,7 +130,12 @@ public class StudyPlanRepository {
             conn.setAutoCommit(false);
 
             try (PreparedStatement psItems = conn.prepareStatement(sqlDeleteItems);
+                 PreparedStatement psSessions = conn.prepareStatement(sqlDeleteSessions);
                  PreparedStatement psPlan = conn.prepareStatement(sqlDeletePlan)) {
+
+                // 1) Deleta as sessões associadas aos itens do plano
+                psSessions.setLong(1, id);
+                psSessions.executeUpdate();
 
                 // Exclui os itens do plano primeiro
                 psItems.setLong(1, id);
