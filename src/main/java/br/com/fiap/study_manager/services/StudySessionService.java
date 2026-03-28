@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class StudySessionService {
@@ -25,9 +26,24 @@ public class StudySessionService {
 
     public StudySession addSession(StudySession studySession) {
 
+        // Pega o ID do usuário que está tentando iniciar a sessão
+        Long userId = studySession.getUser().getId();
+
+        // Verifica se já existe uma sessão rodando ou pausada para este usuário
+        boolean hasActiveSession = repository.existsByUserIdAndStatusIn(
+                userId,
+                List.of("IN_PROGRESS", "PAUSED")
+        );
+
+        if (hasActiveSession) {
+            throw new BusinessException("Você já possui uma sessão de estudo em andamento ou pausada. Encerre-a antes de iniciar outra.");
+        }
+
+        // Se passou na validação, inicia o novo cronômetro
         studySession.setStartedAt(LocalDateTime.now());
         studySession.setStatus("IN_PROGRESS"); // Define o status inicial
         studySession.setPausedAccumulatedSec(0); // Zera o cofrinho
+
         return repository.save(studySession);
 
     }

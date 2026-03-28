@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 public interface StudySessionRepository extends JpaRepository<StudySession, Long> {
 
     // Deleta todas as sessões associadas a um PlanItem específico
@@ -17,5 +19,8 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
     @Transactional
     @Query("DELETE FROM StudySession s WHERE s.planItem.studyPlan.id = :studyPlanId")
     void deleteByStudyPlanId(Long studyPlanId);
+
+    // --- Verifica se o usuário tem sessões com os status informados ---
+    boolean existsByUserIdAndStatusIn(Long userId, List<String> statuses);
 
 }
