@@ -25,6 +25,20 @@ public class StudySessionController {
                 .body(service.addSession(studySession));
     }
 
+    // --- ROTA: PAUSAR ---
+    @PatchMapping("/{id}/pause")
+    public ResponseEntity<StudySession> pauseStudySession(@PathVariable Long id){
+        log.info("Pausando sessão com id {}", id);
+        return ResponseEntity.ok( service.pauseSession(id) );
+    }
+
+    // --- ROTA: RETOMAR ---
+    @PatchMapping("/{id}/resume")
+    public ResponseEntity<StudySession> resumeStudySession(@PathVariable Long id){
+        log.info("Retomando sessão com id {}", id);
+        return ResponseEntity.ok( service.resumeSession(id) );
+    }
+
     @PatchMapping("/{id}/stop")
     public ResponseEntity<StudySession>
     stopStudySession(@PathVariable Long id){

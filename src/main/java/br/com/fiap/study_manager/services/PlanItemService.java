@@ -156,12 +156,12 @@ public class PlanItemService {
                 current.setDurationMinutes((int) minutes);
             } else {
                 // Se for o ÚLTIMO item do dia, ele não tem um "próximo".
-                // Por enquanto: Deixar com 60 minutos padrão
+                // Por enquanto: 60 minutos padrão
                 current.setDurationMinutes(60);
             }
         }
 
-        // 3. Salva a lista inteira atualizada no banco
+        // Salva a lista inteira atualizada no banco
         repository.saveAll(items);
     }
 
