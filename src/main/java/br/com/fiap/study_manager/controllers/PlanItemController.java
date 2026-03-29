@@ -1,7 +1,6 @@
 package br.com.fiap.study_manager.controllers;
 
 import br.com.fiap.study_manager.models.PlanItem;
-import br.com.fiap.study_manager.models.StudyPlan;
 import br.com.fiap.study_manager.services.PlanItemService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

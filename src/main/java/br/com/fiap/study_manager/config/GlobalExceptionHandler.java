@@ -53,10 +53,13 @@ public class GlobalExceptionHandler {
             org.springframework.web.server.ResponseStatusException ex,
             HttpServletRequest request) {
 
+        // Descobre o nome oficial do status
+        String errorName = HttpStatus.valueOf(ex.getStatusCode().value()).getReasonPhrase();
+
         ApiError error = new ApiError(
                 ex.getStatusCode().value(),
-                "Conflict",
-                ex.getReason(), 
+                errorName,
+                ex.getReason(),
                 request.getRequestURI()
         );
 

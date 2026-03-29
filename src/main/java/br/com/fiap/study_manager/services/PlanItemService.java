@@ -33,8 +33,7 @@ public class PlanItemService {
         StudyPlan plan = findStudyPlanById(planItem.getStudyPlan().getId());
         String tipoPlano = plan.getStudyPlanType().getName();
 
-        // Validação exclusiva para 'Rotina Semanal'
-        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano) || "Híbrido".equalsIgnoreCase(tipoPlano)) {
             boolean conflito = repository.existsByStudyPlanIdAndWeekdayAndStartTime(
                     plan.getId(),
                     planItem.getWeekday(),
@@ -46,6 +45,28 @@ public class PlanItemService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Já existe um item agendado para este dia e horário na sua Rotina Semanal.");
             }
+        }
+
+        if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
+
+            if (planItem.getCustomTitle() != null ||
+                    planItem.getWeekday() != null ||
+                    planItem.getStartTime() != null) {
+
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Para o plano do tipo Ciclo, " +
+                                "não é permitido enviar 'customTitle', 'weekday' ou 'startTime'. " +
+                                "Envie apenas a matéria (subject) e a duração.");
+            }
+
+            // Obrigando que a matéria e a duração venham preenchidas!
+            if (planItem.getSubject() == null || planItem.getDurationMinutes() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Para o plano do tipo Ciclo, " +
+                                "é obrigatório selecionar uma matéria (subject)" +
+                                " e definir a duração (durationMinutes).");
+            }
+
         }
 
         // Salva o item recém-chegado
