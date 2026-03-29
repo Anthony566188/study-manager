@@ -127,6 +127,7 @@ public class PlanItemService {
         existing.setCustomTitle(planItem.getCustomTitle());
         existing.setWeekday(planItem.getWeekday());
         existing.setStartTime(planItem.getStartTime());
+        existing.setDone(planItem.getDone());
 
         repository.save(existing);
 
@@ -137,6 +138,18 @@ public class PlanItemService {
 
         return findItemById(id);
 
+    }
+
+    // Alterna o status de concluído (Check/Uncheck)
+    public PlanItem toggleDone(Long id) {
+
+        PlanItem existing = findItemById(id);
+
+        // Se for null ou false, vira true. Se for true, vira false.
+        boolean isDone = existing.getDone() != null && existing.getDone();
+        existing.setDone(!isDone);
+
+        return repository.save(existing);
     }
 
     @Transactional // Garante que tudo seja excluído ou nada seja (rollback) em caso de erro

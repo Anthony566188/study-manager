@@ -47,4 +47,10 @@ public class PlanItemController {
         return ResponseEntity.ok( service.updatePlanItem(id, planItem) );
     }
 
+    @PatchMapping("{id}/done")
+    public ResponseEntity<PlanItem> togglePlanItemDone(@PathVariable Long id) {
+        log.info("Alterando status de conclusão do item de id {}...", id);
+        return ResponseEntity.ok(service.toggleDone(id));
+    }
+
 }

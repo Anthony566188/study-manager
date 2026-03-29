@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalTime;
 
@@ -13,6 +14,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@DynamicInsert
 @Table(name = "DB_PLAN_ITEMS")
 public class PlanItem {
 
@@ -21,11 +23,11 @@ public class PlanItem {
     @Column(name = "ID")
     private Long id;
 
-    @ManyToOne // Muitos itens para um plano
-    @JoinColumn(name = "ID_STUDY_PLAN", nullable = false) // Nome da FK no banco
+    @ManyToOne
+    @JoinColumn(name = "ID_STUDY_PLAN", nullable = false)
     private StudyPlan studyPlan;
 
-    @ManyToOne // Muitos itens para uma matéria
+    @ManyToOne
     @JoinColumn(name = "ID_SUBJECT") // Aqui pode ser null
     private Subject subject;
 
@@ -41,5 +43,8 @@ public class PlanItem {
 
     @Column(name = "DURATION_MINUTES")
     private Integer durationMinutes;
+
+    @Column(name = "DONE")
+    private Boolean done;
 
 }
