@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalTime;
 
@@ -15,6 +16,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Entity
 @DynamicInsert
+@DynamicUpdate
 @Table(name = "DB_PLAN_ITEMS")
 public class PlanItem {
 
@@ -45,6 +47,6 @@ public class PlanItem {
     private Integer durationMinutes;
 
     @Column(name = "DONE")
-    private Boolean done;
+    private Boolean done = false;
 
 }
