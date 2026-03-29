@@ -46,4 +46,17 @@ public class StudySessionController {
         return ResponseEntity.ok( service.stopStudySession(id) );
     }
 
+    @PostMapping("/compensate/users/{userId}/subjects/{subjectId}")
+    public ResponseEntity<StudySession> createCompensatorySession(
+            @PathVariable Long userId,
+            @PathVariable Long subjectId) {
+
+        log.info("Iniciando sessão de compensação para o usuário {} na matéria {}"
+                , userId, subjectId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.addCompensatorySession(userId, subjectId));
+    }
+
 }

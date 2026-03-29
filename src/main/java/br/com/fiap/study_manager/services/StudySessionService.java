@@ -4,6 +4,7 @@ import br.com.fiap.study_manager.exceptions.BusinessException;
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.StudyBalance;
 import br.com.fiap.study_manager.models.StudySession;
+import br.com.fiap.study_manager.models.Subject;
 import br.com.fiap.study_manager.repositories.StudyBalanceRepository;
 import br.com.fiap.study_manager.repositories.StudySessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,10 @@ public class StudySessionService {
         );
 
         if (hasActiveSession) {
-            throw new BusinessException("Você já possui uma sessão de estudo em andamento ou pausada. Encerre-a antes de iniciar outra.");
+            throw new BusinessException(
+                    "Você já possui uma sessão de estudo em andamento ou pausada. " +
+                            "Encerre-a antes de iniciar outra."
+            );
         }
 
         // Se passou na validação, inicia o novo cronômetro
@@ -126,36 +130,48 @@ public class StudySessionService {
         // Converte os segundos totais em minutos reais de estudo
         long minutosEstudados = totalSeconds / 60;
 
-        PlanItem item = existing.getPlanItem();
-        String tipoPlano = item.getStudyPlan().getStudyPlanType().getName();
+        // VERIFICA O TIPO DE SESSÃO
+        if (existing.getPlanItem() != null) {
 
-        /*
-         *  REGRA DE NEGÓCIO: Aplica saldo apenas se for "Híbrido" E se for um
-         *  "Subject" (não custom title)
-         */
-        if ("Híbrido".equalsIgnoreCase(tipoPlano) && item.getSubject() != null) {
+            PlanItem item = existing.getPlanItem();
+            String tipoPlano = item.getStudyPlan().getStudyPlanType().getName();
 
-            // Pega quanto tempo ele deveria ter estudado
-            long minutosPlanejados = item
-                    .getDurationMinutes() != null ? item
-                    .getDurationMinutes() : 0;
+            if ("Híbrido".equalsIgnoreCase(tipoPlano) && item.getSubject() != null) {
 
-            long diferenca = minutosPlanejados - minutosEstudados;
+                long minutosPlanejados = item
+                        .getDurationMinutes() != null ? item.getDurationMinutes() : 0;
+                long diferenca = minutosPlanejados - minutosEstudados;
 
-            if (diferenca != 0) {
-                atualizarSaldo(existing
-                        .getUser()
-                        .getId(), item.getSubject().getId(), (int) diferenca);
+                if (diferenca != 0) {
+                    updateBalance(
+                            existing.getUser()
+                                    .getId(), item
+                                    .getSubject().getId(), (int) diferenca
+                    );
+                }
+
+            }
+
+        } else if (existing.getSubject() != null) {
+            /*
+            * Estudo livre,
+            * 100% do tempo estudado entra como abatimento da dívida
+            * (valor negativo)
+            */
+            if (minutosEstudados > 0) {
+                updateBalance(
+                        existing.getUser()
+                                .getId(), existing
+                                .getSubject().getId(), (int) -minutosEstudados
+                );
             }
         }
 
         return repository.save(existing);
-
     }
 
-
     // Método auxiliar para criar ou atualizar o saldo
-    private void atualizarSaldo(Long userId, Long subjectId, int minutosDiferenca) {
+    private void updateBalance(Long userId, Long subjectId, int minutosDiferenca) {
 
         StudyBalance balance = balanceRepository
                 .findByUserIdAndSubjectId(userId, subjectId)
@@ -174,6 +190,30 @@ public class StudySessionService {
         balance.setUpdatedAt(LocalDateTime.now());
 
         balanceRepository.save(balance);
+    }
+
+    // --- MÉTODO: INICIAR SESSÃO DE COMPENSAÇÃO ---
+    public StudySession addCompensatorySession(Long userId, Long subjectId) {
+
+        boolean hasActiveSession = repository
+                .existsByUserIdAndStatusIn(userId, List.of("IN_PROGRESS", "PAUSED"));
+
+        if (hasActiveSession) {
+            throw new BusinessException("Você já possui uma sessão em andamento.");
+        }
+
+        StudySession session = new StudySession();
+        session.setUser(new br.com.fiap.study_manager.models.User(userId));
+
+        Subject subject = new Subject();
+        subject.setId(subjectId);
+        session.setSubject(subject);
+
+        session.setStartedAt(LocalDateTime.now());
+        session.setStatus("IN_PROGRESS");
+        session.setPausedAccumulatedSec(0);
+
+        return repository.save(session);
     }
 
     private StudySession findStudySessionById(Long id){

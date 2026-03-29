@@ -22,12 +22,16 @@ public class StudySession {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "ID_PLAN_ITEM", nullable = false)
+    @JoinColumn(name = "ID_PLAN_ITEM")
     private PlanItem planItem;
 
     @ManyToOne
     @JoinColumn(name = "ID_USER", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "ID_SUBJECT")
+    private Subject subject;
 
     @Column(name = "STATUS")
     private String status;
