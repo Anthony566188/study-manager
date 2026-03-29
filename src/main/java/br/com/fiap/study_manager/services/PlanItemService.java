@@ -145,11 +145,20 @@ public class PlanItemService {
 
         PlanItem existing = findItemById(id);
 
-        // Se for null ou false, vira true. Se for true, vira false.
-        boolean isDone = existing.getDone() != null && existing.getDone();
-        existing.setDone(!isDone);
+        StudyPlan plan = findStudyPlanById(existing.getStudyPlan().getId());
+        String tipoPlano = plan.getStudyPlanType().getName();
 
-        return repository.save(existing);
+        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            // Se for null ou false, vira true. Se for true, vira false.
+            boolean isDone = existing.getDone() != null && existing.getDone();
+            existing.setDone(!isDone);
+
+            return repository.save(existing);
+        }
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "'done' não se aplica em outro tipo de plano que não seja 'Rotina Semanal'.");
+
     }
 
     @Transactional // Garante que tudo seja excluído ou nada seja (rollback) em caso de erro

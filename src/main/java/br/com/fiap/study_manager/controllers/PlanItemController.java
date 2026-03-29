@@ -48,12 +48,14 @@ public class PlanItemController {
         return ResponseEntity.ok( service.updatePlanItem(id, planItem) );
     }
 
+    // Endpoint para marcar e desmarcar item
     @PatchMapping("{id}/done")
     public ResponseEntity<PlanItem> togglePlanItemDone(@PathVariable Long id) {
         log.info("Alterando status de conclusão do item de id {}...", id);
         return ResponseEntity.ok(service.toggleDone(id));
     }
 
+    // Endpoint para restar todas as tarefas de um dia
     @PatchMapping("/plans/{idStudyPlan}/reset/{weekday}")
     public ResponseEntity<Void> resetDoneByWeekday(
             @PathVariable Long idStudyPlan,
