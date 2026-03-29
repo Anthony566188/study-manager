@@ -69,6 +69,16 @@ public class PlanItemService {
 
         }
 
+        // Decide o valor do 'done' baseado no tipo de plano
+        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            if (planItem.getDone() == null) {
+                planItem.setDone(false); // Garante que nasce como false
+            }
+        }
+        if (!"Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            planItem.setDone(null);
+        }
+
         // Salva o item recém-chegado
         PlanItem saved = repository.save(planItem);
 
@@ -127,7 +137,14 @@ public class PlanItemService {
         existing.setCustomTitle(planItem.getCustomTitle());
         existing.setWeekday(planItem.getWeekday());
         existing.setStartTime(planItem.getStartTime());
-        existing.setDone(planItem.getDone());
+
+        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            // Se mandou null, vira false. Se mandou valor, usa o valor.
+            existing.setDone(planItem.getDone() != null ? planItem.getDone() : false);
+        }
+        if (!"Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            existing.setDone(null);
+        }
 
         repository.save(existing);
 
@@ -148,16 +165,16 @@ public class PlanItemService {
         StudyPlan plan = findStudyPlanById(existing.getStudyPlan().getId());
         String tipoPlano = plan.getStudyPlanType().getName();
 
-        if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
-            // Se for null ou false, vira true. Se for true, vira false.
-            boolean isDone = existing.getDone() != null && existing.getDone();
-            existing.setDone(!isDone);
-
-            return repository.save(existing);
+        // Cláusula de Guarda: Se NÃO for Rotina Semanal, lança o erro e para a execução.
+        if (!"Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "'done' não se aplica em outro tipo de plano que não seja 'Rotina Semanal'.");
         }
 
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "'done' não se aplica em outro tipo de plano que não seja 'Rotina Semanal'.");
+        boolean isDone = existing.getDone() != null && existing.getDone();
+        existing.setDone(!isDone);
+
+        return repository.save(existing);
 
     }
 
@@ -180,10 +197,16 @@ public class PlanItemService {
     public void resetDoneByWeekday(Long idStudyPlan, Weekday weekday) {
 
         // Verifica se o plano existe (se não existir, lança 404 automaticamente)
-        findStudyPlanById(idStudyPlan);
+        StudyPlan plan = findStudyPlanById(idStudyPlan);
+        String tipoPlano = plan.getStudyPlanType().getName();
 
-        // Executa o update em lote para aquele dia específico
+        if (!"Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "'done' não se aplica em outro tipo de plano que não seja 'Rotina Semanal'.");
+        }
+
         repository.resetDoneByStudyPlanAndWeekday(idStudyPlan, weekday);
+
     }
 
     private void recalculateDurations(Long idStudyPlan, Weekday weekday) {

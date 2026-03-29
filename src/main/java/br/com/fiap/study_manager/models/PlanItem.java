@@ -47,6 +47,6 @@ public class PlanItem {
     private Integer durationMinutes;
 
     @Column(name = "DONE")
-    private Boolean done = false;
+    private Boolean done;
 
 }
