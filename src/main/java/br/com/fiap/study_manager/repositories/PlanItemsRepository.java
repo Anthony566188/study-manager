@@ -24,7 +24,6 @@ public interface PlanItemsRepository extends JpaRepository<PlanItem, Long> {
     boolean existsByStudyPlanIdAndWeekdayAndStartTime(Long studyPlanId, Weekday weekday, LocalTime startTime);
 
     // Ao deletar uma Subject, precisamos garantir que não existe FK ativa para ela em DB_PLAN_ITEMS.
-    // Como ID_SUBJECT é (na prática) opcional, a melhor estratégia é desvincular os itens.
     @Modifying
     @Query("update PlanItem p set p.subject = null where p.subject.id = :subjectId")
     int nullifySubjectForSubjectId(Long subjectId);
@@ -34,5 +33,11 @@ public interface PlanItemsRepository extends JpaRepository<PlanItem, Long> {
     @Transactional
     @Query("DELETE FROM PlanItem p WHERE p.studyPlan.id = :studyPlanId")
     void deleteByStudyPlanId(Long studyPlanId);
+
+    // Reseta o status 'done' para false de todos os itens de um plano em um dia específico
+    @Modifying
+    @Transactional
+    @Query("UPDATE PlanItem p SET p.done = false WHERE p.studyPlan.id = :studyPlanId AND p.weekday = :weekday")
+    void resetDoneByStudyPlanAndWeekday(Long studyPlanId, Weekday weekday);
 
 }

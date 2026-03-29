@@ -167,6 +167,16 @@ public class PlanItemService {
 
     }
 
+    @Transactional
+    public void resetDoneByWeekday(Long idStudyPlan, Weekday weekday) {
+
+        // Verifica se o plano existe (se não existir, lança 404 automaticamente)
+        findStudyPlanById(idStudyPlan);
+
+        // Executa o update em lote para aquele dia específico
+        repository.resetDoneByStudyPlanAndWeekday(idStudyPlan, weekday);
+    }
+
     private void recalculateDurations(Long idStudyPlan, Weekday weekday) {
 
         // Descobre qual é o tipo do plano

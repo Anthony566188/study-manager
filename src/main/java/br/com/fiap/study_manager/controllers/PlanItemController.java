@@ -1,6 +1,7 @@
 package br.com.fiap.study_manager.controllers;
 
 import br.com.fiap.study_manager.models.PlanItem;
+import br.com.fiap.study_manager.models.enums.Weekday;
 import br.com.fiap.study_manager.services.PlanItemService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,17 @@ public class PlanItemController {
     public ResponseEntity<PlanItem> togglePlanItemDone(@PathVariable Long id) {
         log.info("Alterando status de conclusão do item de id {}...", id);
         return ResponseEntity.ok(service.toggleDone(id));
+    }
+
+    @PatchMapping("/plans/{idStudyPlan}/reset/{weekday}")
+    public ResponseEntity<Void> resetDoneByWeekday(
+            @PathVariable Long idStudyPlan,
+            @PathVariable Weekday weekday) {
+
+        log.info("Desmarcando todas as tarefas do plano {} para o dia {}", idStudyPlan, weekday);
+        service.resetDoneByWeekday(idStudyPlan, weekday);
+
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content (sucesso sem corpo de resposta)
     }
 
 }
