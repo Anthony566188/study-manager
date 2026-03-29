@@ -61,6 +61,13 @@ public class PlanItemService {
 
     public List<PlanItem> listItems(long idStudyPlan) {
 
+        /*
+            Verifica se o plano existe.
+            Se não existir, o método já lança o erro 404 automaticamente.
+         */
+        findStudyPlanById(idStudyPlan);
+
+        // Se a linha de cima não der erro, significa que o plano existe.
         return repository.findByStudyPlanId(idStudyPlan);
 
     }
