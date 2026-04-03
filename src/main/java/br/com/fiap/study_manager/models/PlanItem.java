@@ -49,4 +49,7 @@ public class PlanItem {
     @Column(name = "DONE")
     private Boolean done;
 
+    @Column(name = "COMPLETED_MINUTES")
+    private Integer completedMinutes;
+
 }

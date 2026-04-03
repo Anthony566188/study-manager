@@ -1,5 +1,6 @@
 package br.com.fiap.study_manager.controllers;
 
+import br.com.fiap.study_manager.dto.PlanItemResponse;
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.enums.Weekday;
 import br.com.fiap.study_manager.services.PlanItemService;
@@ -29,9 +30,11 @@ public class PlanItemController {
     }
 
     @GetMapping("/{idStudyPlan}")
-    public List<PlanItem> listItems(@PathVariable long idStudyPlan){
+    public List<PlanItemResponse> listItems(@PathVariable long idStudyPlan){
         log.info("Listando os itens do plano de estudo de id {}...", idStudyPlan);
-        return service.listItems(idStudyPlan);
+        return service.listItems(idStudyPlan).stream()
+                .map(PlanItemResponse::fromEntity)
+                .toList();
     }
 
     @DeleteMapping("{id}")

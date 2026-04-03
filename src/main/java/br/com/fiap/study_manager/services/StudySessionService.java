@@ -5,9 +5,9 @@ import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.StudyBalance;
 import br.com.fiap.study_manager.models.StudySession;
 import br.com.fiap.study_manager.models.Subject;
+import br.com.fiap.study_manager.repositories.PlanItemsRepository;
 import br.com.fiap.study_manager.repositories.StudyBalanceRepository;
 import br.com.fiap.study_manager.repositories.StudySessionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,11 +19,21 @@ import java.util.List;
 @Service
 public class StudySessionService {
 
-    @Autowired
-    private StudySessionRepository repository;
+    private final StudySessionRepository repository;
 
-    @Autowired
-    private StudyBalanceRepository balanceRepository;
+    private final StudyBalanceRepository balanceRepository;
+
+    private final PlanItemsRepository planItemsRepository;
+
+    public StudySessionService(
+            StudySessionRepository repository,
+            StudyBalanceRepository balanceRepository,
+            PlanItemsRepository planItemsRepository
+    ) {
+        this.repository = repository;
+        this.balanceRepository = balanceRepository;
+        this.planItemsRepository = planItemsRepository;
+    }
 
     public StudySession addSession(StudySession studySession) {
 
@@ -152,7 +162,23 @@ public class StudySessionService {
 
             }
 
-        } else if (existing.getSubject() != null) {
+            if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
+
+                int currentCompleted = item.getCompletedMinutes() != null ? item.getCompletedMinutes() : 0;
+
+                // Soma os minutos estudados na sessão de agora com o que já estava feito
+                item.setCompletedMinutes(currentCompleted + (int) minutosEstudados);
+
+                // Salva a atualização no banco
+                planItemsRepository.save(item);
+            }
+
+        }
+
+        /*
+         *  Essa condição é ativada quando o endpoint de compensação é chamado
+         */
+        if (existing.getSubject() != null) {
             /*
             * Estudo livre,
             * 100% do tempo estudado entra como abatimento da dívida
