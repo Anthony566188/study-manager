@@ -132,6 +132,14 @@ public class PlanItemService {
             }
         }
 
+        // --- VALIDAÇÃO PARA O CICLO NO UPDATE ---
+        if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
+            if (planItem.getSubject() == null || planItem.getDurationMinutes() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Para o plano do tipo Ciclo, é obrigatório manter a matéria (subject) e a duração (durationMinutes).");
+            }
+        }
+
         // Se o usuário mudou o dia da semana, precisamos recalcular o dia antigo E o dia novo!
         Weekday oldDay = existing.getWeekday();
         Weekday newDay = planItem.getWeekday();
@@ -141,6 +149,15 @@ public class PlanItemService {
         existing.setCustomTitle(planItem.getCustomTitle());
         existing.setWeekday(planItem.getWeekday());
         existing.setStartTime(planItem.getStartTime());
+
+        if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
+            // Permite que o utilizador altere a meta de tempo no Ciclo
+            existing.setDurationMinutes(planItem.getDurationMinutes());
+
+        } else {
+            // Força null nos outros planos para limpar qualquer "lixo" que venha no JSON
+            existing.setCompletedMinutes(null);
+        }
 
         if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
             // Se mandou null, vira false. Se mandou valor, usa o valor.
