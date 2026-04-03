@@ -23,7 +23,10 @@ public record PlanItemResponse(
 
         // Cálculo do tempo restante isolado no DTO
         Integer remaining = null;
-        if (planItem.getDurationMinutes() != null) {
+
+        String tipoPlano = planItem.getStudyPlan().getStudyPlanType().getName();
+
+        if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
             int completed = (planItem.getCompletedMinutes() != null) ? planItem.getCompletedMinutes() : 0;
             remaining = Math.max(0, planItem.getDurationMinutes() - completed);
         }

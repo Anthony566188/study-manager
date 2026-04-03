@@ -67,6 +67,9 @@ public class PlanItemService {
                                 " e definir a duração (durationMinutes).");
             }
 
+            // Se for 'Ciclo', começa com 0 ao invés de 'null'
+            planItem.setCompletedMinutes(0);
+
         }
 
         // Decide o valor do 'done' baseado no tipo de plano
@@ -75,6 +78,7 @@ public class PlanItemService {
                 planItem.setDone(false); // Garante que nasce como false
             }
         }
+
         if (!"Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
             planItem.setDone(null);
         }
