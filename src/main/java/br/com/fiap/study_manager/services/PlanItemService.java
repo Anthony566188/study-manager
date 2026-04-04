@@ -34,6 +34,7 @@ public class PlanItemService {
         String tipoPlano = plan.getStudyPlanType().getName();
 
         if ("Rotina Semanal".equalsIgnoreCase(tipoPlano) || "Híbrido".equalsIgnoreCase(tipoPlano)) {
+
             boolean conflito = repository.existsByStudyPlanIdAndWeekdayAndStartTime(
                     plan.getId(),
                     planItem.getWeekday(),
@@ -45,6 +46,13 @@ public class PlanItemService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Já existe um item agendado para este dia e horário na sua Rotina Semanal.");
             }
+
+            if (planItem.getWeekday() == null || planItem.getStartTime() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Para o plano do tipo 'Rotina Semanal' e 'Híbrido', " +
+                                "não é permitido enviar null em 'weekday' e/ou 'startTime'.");
+            }
+
         }
 
         if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
@@ -79,6 +87,7 @@ public class PlanItemService {
             }
         }
 
+        // Garante que done seja 'null' se não for do tipo 'Rotina Semanal'
         if (!"Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
             planItem.setDone(null);
         }
