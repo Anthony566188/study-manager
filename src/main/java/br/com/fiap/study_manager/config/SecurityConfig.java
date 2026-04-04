@@ -24,6 +24,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/users").permitAll() // Libera a criação de usuários
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()  // Libera o login
+                        .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         .anyRequest().authenticated() // Exige autenticação para todo o resto
                 )
                 .httpBasic(Customizer.withDefaults());
