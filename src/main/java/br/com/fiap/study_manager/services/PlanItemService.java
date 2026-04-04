@@ -226,7 +226,6 @@ public class PlanItemService {
     @Transactional
     public void resetDoneByWeekday(Long idStudyPlan, Weekday weekday) {
 
-        // Verifica se o plano existe (se não existir, lança 404 automaticamente)
         StudyPlan plan = findStudyPlanById(idStudyPlan);
         String tipoPlano = plan.getStudyPlanType().getName();
 
@@ -236,6 +235,21 @@ public class PlanItemService {
         }
 
         repository.resetDoneByStudyPlanAndWeekday(idStudyPlan, weekday);
+
+    }
+
+    @Transactional
+    public void resetCycle(Long idStudyPlan) {
+
+        StudyPlan plan = findStudyPlanById(idStudyPlan);
+        String tipoPlano = plan.getStudyPlanType().getName();
+
+        if (!"Ciclo".equalsIgnoreCase(tipoPlano)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Método 'resetCycle' disponível apenas para plano do tipo 'Ciclo'.");
+        }
+
+        repository.resetCycleByStudyPlan(idStudyPlan);
 
     }
 

@@ -40,4 +40,10 @@ public interface PlanItemsRepository extends JpaRepository<PlanItem, Long> {
     @Query("UPDATE PlanItem p SET p.done = false WHERE p.studyPlan.id = :studyPlanId AND p.weekday = :weekday")
     void resetDoneByStudyPlanAndWeekday(Long studyPlanId, Weekday weekday);
 
+    // Reseta o 'completedMinutes' de todos os itens de um plano
+    @Modifying
+    @Transactional
+    @Query("UPDATE PlanItem p SET p.completedMinutes = 0 WHERE p.studyPlan.id = :studyPlanId")
+    void resetCycleByStudyPlan(Long studyPlanId);
+
 }

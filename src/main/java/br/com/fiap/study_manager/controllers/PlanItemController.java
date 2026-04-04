@@ -70,4 +70,14 @@ public class PlanItemController {
         return ResponseEntity.noContent().build(); // Retorna 204 No Content (sucesso sem corpo de resposta)
     }
 
+    @PatchMapping("/plans/{idStudyPlan}/reset")
+    public ResponseEntity<Void> resetCycleByStudyPlan(
+            @PathVariable Long idStudyPlan) {
+
+        log.info("Resetando os minutos completos do plano de id {} do tipo 'Ciclo'.", idStudyPlan);
+        service.resetCycle(idStudyPlan);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
