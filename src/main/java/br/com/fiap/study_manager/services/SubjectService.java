@@ -1,12 +1,12 @@
 package br.com.fiap.study_manager.services;
 
 import br.com.fiap.study_manager.exceptions.BusinessException;
+import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.Subject;
 import br.com.fiap.study_manager.repositories.PlanItemsRepository;
 import br.com.fiap.study_manager.repositories.StudyBalanceRepository;
+import br.com.fiap.study_manager.repositories.StudySessionRepository;
 import br.com.fiap.study_manager.repositories.SubjectRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,17 @@ public class SubjectService {
     @Autowired
     private PlanItemsRepository planItemsRepository;
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final StudySessionRepository studySessionRepository;
+
+    private final PlanItemService planItemService;
+
+    public SubjectService(
+            StudySessionRepository studySessionRepository
+            , PlanItemService planItemService
+    ) {
+        this.studySessionRepository = studySessionRepository;
+        this.planItemService = planItemService;
+    }
 
     public Subject addSubject(Subject subject) {
 
@@ -50,9 +60,21 @@ public class SubjectService {
         // Apaga o "banco de horas" da subject
         balanceRepository.deleteBySubject_Id(id);
 
-        // Desvincula a subject dos itens de plano (mantém o item do plano)
-        int itensAfetados = planItemsRepository.nullifySubjectForSubjectId(id);
-        log.info("O 'Subject' foi desvinculado de {} itens.", itensAfetados);
+        // Apaga as sessões de compensação vinculadas diretamente a esta matéria
+        studySessionRepository.deleteBySubjectId(id);
+
+        // Busca todos os itens que usam esta matéria
+        List<PlanItem> itensDaMateria = planItemsRepository.findBySubjectId(id);
+
+        // Usa o método do PlanItemService para deletar cada item com segurança!
+        for (PlanItem item : itensDaMateria) {
+            /* * Ao chamar esse método, ele automaticamente:
+             * - Deleta as StudySessions do item
+             * - Deleta o Item
+             * - RECALCULA as horas dos itens vizinhos no dia!
+             */
+            planItemService.deletePlanItem(item.getId());
+        }
 
         // Apaga o subject
         repository.deleteById(id);

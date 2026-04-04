@@ -23,11 +23,6 @@ public interface PlanItemsRepository extends JpaRepository<PlanItem, Long> {
     // Verifica se já existe um item no mesmo plano, dia e horário
     boolean existsByStudyPlanIdAndWeekdayAndStartTime(Long studyPlanId, Weekday weekday, LocalTime startTime);
 
-    // Ao deletar uma Subject, precisamos garantir que não existe FK ativa para ela em DB_PLAN_ITEMS.
-    @Modifying
-    @Query("update PlanItem p set p.subject = null where p.subject.id = :subjectId")
-    int nullifySubjectForSubjectId(Long subjectId);
-
     // Deleta todos os itens baseados no id do plano de estudo
     @Modifying
     @Transactional
@@ -45,5 +40,8 @@ public interface PlanItemsRepository extends JpaRepository<PlanItem, Long> {
     @Transactional
     @Query("UPDATE PlanItem p SET p.completedMinutes = 0 WHERE p.studyPlan.id = :studyPlanId")
     void resetCycleByStudyPlan(Long studyPlanId);
+
+    // Busca todos os itens associados a uma matéria específica
+    List<PlanItem> findBySubjectId(Long subjectId);
 
 }

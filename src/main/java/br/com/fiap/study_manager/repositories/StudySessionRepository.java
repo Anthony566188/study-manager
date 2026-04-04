@@ -23,4 +23,10 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
     // --- Verifica se o usuário tem sessões com os status informados ---
     boolean existsByUserIdAndStatusIn(Long userId, List<String> statuses);
 
+    // Deleta todas as sessões associadas DIRETAMENTE a uma matéria (Sessões de Compensação)
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM StudySession s WHERE s.subject.id = :subjectId")
+    void deleteBySubjectId(Long subjectId);
+
 }
