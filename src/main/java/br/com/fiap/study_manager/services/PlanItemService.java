@@ -253,6 +253,7 @@ public class PlanItemService {
 
     }
 
+    // Método auxiliar para recalcular a duração de cada item
     private void recalculateDurations(Long idStudyPlan, Weekday weekday) {
 
         // Descobre qual é o tipo do plano

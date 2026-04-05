@@ -2,11 +2,9 @@ package br.com.fiap.study_manager.services;
 
 import br.com.fiap.study_manager.exceptions.BusinessException;
 import br.com.fiap.study_manager.models.PlanItem;
-import br.com.fiap.study_manager.models.StudyBalance;
 import br.com.fiap.study_manager.models.StudySession;
 import br.com.fiap.study_manager.models.Subject;
 import br.com.fiap.study_manager.repositories.PlanItemsRepository;
-import br.com.fiap.study_manager.repositories.StudyBalanceRepository;
 import br.com.fiap.study_manager.repositories.StudySessionRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,18 +19,18 @@ public class StudySessionService {
 
     private final StudySessionRepository repository;
 
-    private final StudyBalanceRepository balanceRepository;
-
     private final PlanItemsRepository planItemsRepository;
+
+    private final StudyBalanceService studyBalanceService;
 
     public StudySessionService(
             StudySessionRepository repository,
-            StudyBalanceRepository balanceRepository,
-            PlanItemsRepository planItemsRepository
+            PlanItemsRepository planItemsRepository,
+            StudyBalanceService studyBalanceService
     ) {
         this.repository = repository;
-        this.balanceRepository = balanceRepository;
         this.planItemsRepository = planItemsRepository;
+        this.studyBalanceService = studyBalanceService;
     }
 
     public StudySession addSession(StudySession studySession) {
@@ -111,6 +109,7 @@ public class StudySessionService {
         // Pega o objeto completo com base no id
         StudySession existing = findStudySessionById(id);
 
+        // Verifica se a sessão já foi encerrada
         if ("COMPLETED".equals(existing.getStatus())) {
             throw new BusinessException("Esta sessão já foi encerrada.");
         }
@@ -148,12 +147,12 @@ public class StudySessionService {
 
             if ("Híbrido".equalsIgnoreCase(tipoPlano) && item.getSubject() != null) {
 
-                long minutosPlanejados = item
-                        .getDurationMinutes() != null ? item.getDurationMinutes() : 0;
+                long minutosPlanejados =
+                        item.getDurationMinutes() != null ? item.getDurationMinutes() : 0;
                 long diferenca = minutosPlanejados - minutosEstudados;
 
                 if (diferenca != 0) {
-                    updateBalance(
+                    studyBalanceService.updateBalance(
                             existing.getUser()
                                     .getId(), item
                                     .getSubject().getId(), (int) diferenca
@@ -178,14 +177,14 @@ public class StudySessionService {
         /*
          *  Essa condição é ativada quando o endpoint de compensação é chamado
          */
-        if (existing.getSubject() != null) {
+        if (existing.getPlanItem() == null && existing.getSubject() != null) {
             /*
             * Estudo livre,
             * 100% do tempo estudado entra como abatimento da dívida
             * (valor negativo)
             */
             if (minutosEstudados > 0) {
-                updateBalance(
+                studyBalanceService.updateBalance(
                         existing.getUser()
                                 .getId(), existing
                                 .getSubject().getId(), (int) -minutosEstudados
@@ -194,28 +193,6 @@ public class StudySessionService {
         }
 
         return repository.save(existing);
-    }
-
-    // Método auxiliar para criar ou atualizar o saldo
-    private void updateBalance(Long userId, Long subjectId, int minutosDiferenca) {
-
-        StudyBalance balance = balanceRepository
-                .findByUserIdAndSubjectId(userId, subjectId)
-                .orElseGet(() -> {
-                    // Se não existir saldo anterior, cria um registro zerado
-                    StudyBalance novoSaldo = new StudyBalance();
-                    novoSaldo.setUser(new br.com.fiap.study_manager.models.User(userId));
-                    novoSaldo.setSubject(new br.com.fiap.study_manager.models.Subject());
-                    novoSaldo.getSubject().setId(subjectId);
-                    novoSaldo.setBalanceMinutes(0);
-                    return novoSaldo;
-                });
-
-        // Soma ou subtrai os minutos (dependendo se a diferença for positiva ou negativa)
-        balance.setBalanceMinutes(balance.getBalanceMinutes() + minutosDiferenca);
-        balance.setUpdatedAt(LocalDateTime.now());
-
-        balanceRepository.save(balance);
     }
 
     // --- MÉTODO: INICIAR SESSÃO DE COMPENSAÇÃO ---
