@@ -4,6 +4,7 @@ import br.com.fiap.study_manager.converters.WeekdayConverter;
 import br.com.fiap.study_manager.models.enums.Weekday;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -17,6 +18,7 @@ import java.time.LocalTime;
 @Entity
 @DynamicInsert
 @DynamicUpdate
+@Builder
 @Table(name = "DB_PLAN_ITEMS")
 public class PlanItem {
 

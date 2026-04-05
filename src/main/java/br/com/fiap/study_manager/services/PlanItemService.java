@@ -2,6 +2,7 @@ package br.com.fiap.study_manager.services;
 
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.StudyPlan;
+import br.com.fiap.study_manager.models.Subject;
 import br.com.fiap.study_manager.models.enums.Weekday;
 import br.com.fiap.study_manager.repositories.PlanItemsRepository;
 import br.com.fiap.study_manager.repositories.StudyPlanRepository;
@@ -35,23 +36,26 @@ public class PlanItemService {
 
         if ("Rotina Semanal".equalsIgnoreCase(tipoPlano) || "Híbrido".equalsIgnoreCase(tipoPlano)) {
 
+            // Verifica se há conflito entre dia e hora
             boolean conflito = repository.existsByStudyPlanIdAndWeekdayAndStartTime(
                     plan.getId(),
                     planItem.getWeekday(),
-                    planItem.getStartTime()
-            );
-
+                    planItem.getStartTime());
             if (conflito) {
                 // Retorna 409 Conflict abortando a requisição
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Já existe um item agendado para este dia e horário na sua Rotina Semanal.");
             }
 
+            // Impede que seja enviado null em certos campos
             if (planItem.getWeekday() == null || planItem.getStartTime() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Para o plano do tipo 'Rotina Semanal' e 'Híbrido', " +
                                 "não é permitido enviar null em 'weekday' e/ou 'startTime'.");
             }
+
+            // Verifica se foi enviado apenas 'subject' ou 'customTitle'
+            subjectAndCustomTileValidation(planItem.getSubject(), planItem.getCustomTitle());
 
         }
 
@@ -94,9 +98,6 @@ public class PlanItemService {
 
         // Salva o item recém-chegado
         PlanItem saved = repository.save(planItem);
-
-        // Dispara o recálculo para arrumar o tempo dele e dos vizinhos
-        recalculateDurations(saved.getStudyPlan().getId(), saved.getWeekday());
 
         // Retorna o item atualizado (buscando do banco para pegar a duração recalculada)
         return findItemById(saved.getId());
@@ -291,6 +292,19 @@ public class PlanItemService {
 
         // Salva a lista inteira atualizada no banco
         repository.saveAll(items);
+    }
+
+    private void subjectAndCustomTileValidation(Subject subject, String customTitle) {
+        if (subject == null && customTitle == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não é possível enviar null em 'subject' e 'customTitle'. " +
+                            "Envie pelo menos um.");
+        }
+
+        if (subject != null && customTitle != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Não é possível enviar 'subject' e 'customTitle' ao mesmo tempo. Envie apenas um.");
+        }
     }
 
     private PlanItem findItemById(Long id){

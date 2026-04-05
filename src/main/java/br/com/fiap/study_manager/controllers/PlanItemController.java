@@ -1,9 +1,11 @@
 package br.com.fiap.study_manager.controllers;
 
+import br.com.fiap.study_manager.dto.PlanItemRequest;
 import br.com.fiap.study_manager.dto.PlanItemResponse;
 import br.com.fiap.study_manager.models.PlanItem;
 import br.com.fiap.study_manager.models.enums.Weekday;
 import br.com.fiap.study_manager.services.PlanItemService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +25,10 @@ public class PlanItemController {
     PlanItemService service;
 
     @PostMapping
-    public ResponseEntity<PlanItem> createPlanItem(@RequestBody PlanItem planItem){ //binding
+    public ResponseEntity<PlanItem> createPlanItem(@RequestBody @Valid PlanItemRequest planItemRequest){ //binding
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(service.addPlanItem(planItem));
+                .body(service.addPlanItem(planItemRequest.toEntity()));
     }
 
     @GetMapping("/{idStudyPlan}")
