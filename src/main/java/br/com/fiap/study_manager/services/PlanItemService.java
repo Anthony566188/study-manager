@@ -28,6 +28,12 @@ public class PlanItemService {
     @Autowired
     private StudySessionRepository studySessionRepository;
 
+    private final StudyBalanceService studyBalanceService;
+
+    public PlanItemService(StudyBalanceService studyBalanceService) {
+        this.studyBalanceService = studyBalanceService;
+    }
+
     public PlanItem addPlanItem(PlanItem planItem) {
 
         // Busca o plano para saber qual é o tipo
@@ -48,10 +54,14 @@ public class PlanItemService {
             }
 
             // Impede que seja enviado null em certos campos
-            if (planItem.getWeekday() == null || planItem.getStartTime() == null) {
+            if (planItem.getWeekday() == null ||
+                    planItem.getStartTime() == null ||
+                    planItem.getDurationMinutes() == null){
+
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Para o plano do tipo 'Rotina Semanal' e 'Híbrido', " +
                                 "não é permitido enviar null em 'weekday' e/ou 'startTime'.");
+
             }
 
             // Verifica se foi enviado apenas 'subject' ou 'customTitle'
@@ -84,6 +94,15 @@ public class PlanItemService {
 
         }
 
+        if ("Híbrido".equalsIgnoreCase(tipoPlano) && planItem.getSubject() != null) {
+
+            Long idUser = plan.getUser().getId();
+            Long idSubject = planItem.getSubject().getId();
+            int durationMinutes = planItem.getDurationMinutes();
+
+            studyBalanceService.updateBalance(idUser, idSubject, durationMinutes);
+        }
+
         // Decide o valor do 'done' baseado no tipo de plano
         if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
             if (planItem.getDone() == null) {
@@ -99,7 +118,7 @@ public class PlanItemService {
         // Salva o item recém-chegado
         PlanItem saved = repository.save(planItem);
 
-        // Retorna o item atualizado (buscando do banco para pegar a duração recalculada)
+        // Retorna o item atualizado
         return findItemById(saved.getId());
 
     }
@@ -150,24 +169,27 @@ public class PlanItemService {
             }
         }
 
-        // Se o usuário mudou o dia da semana, precisamos recalcular o dia antigo E o dia novo!
-        Weekday oldDay = existing.getWeekday();
-        Weekday newDay = planItem.getWeekday();
+        // --- LÓGICA DE ATUALIZAÇÃO DO BANCO DE HORAS (HÍBRIDO) ---
+        if ("Híbrido".equalsIgnoreCase(tipoPlano)) {
+            Long idUser = plan.getUser().getId();
+
+            // Estorna (subtrai) o tempo do item antigo
+            if (existing.getSubject() != null && existing.getDurationMinutes() != null) {
+                studyBalanceService.updateBalance(idUser, existing.getSubject().getId(), -existing.getDurationMinutes());
+            }
+
+            // Deposita o tempo do item atualizado
+            if (planItem.getSubject() != null && planItem.getDurationMinutes() != null) {
+                studyBalanceService.updateBalance(idUser, planItem.getSubject().getId(), planItem.getDurationMinutes());
+            }
+        }
 
         // Atualiza os dados
         existing.setSubject(planItem.getSubject());
         existing.setCustomTitle(planItem.getCustomTitle());
         existing.setWeekday(planItem.getWeekday());
         existing.setStartTime(planItem.getStartTime());
-
-        if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
-            // Permite que o utilizador altere a meta de tempo no Ciclo
-            existing.setDurationMinutes(planItem.getDurationMinutes());
-
-        } else {
-            // Força null nos outros planos para limpar qualquer "lixo" que venha no JSON
-            existing.setCompletedMinutes(null);
-        }
+        existing.setDurationMinutes(planItem.getDurationMinutes());
 
         if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
             // Se mandou null, vira false. Se mandou valor, usa o valor.
@@ -178,11 +200,6 @@ public class PlanItemService {
         }
 
         repository.save(existing);
-
-        recalculateDurations(planId, oldDay);
-        if (oldDay != newDay) {
-            recalculateDurations(planId, newDay);
-        }
 
         return findItemById(id);
 
@@ -209,18 +226,26 @@ public class PlanItemService {
 
     }
 
-    @Transactional // Garante que tudo seja excluído ou nada seja (rollback) em caso de erro
+    @Transactional
     public void deletePlanItem(Long id) {
 
         PlanItem itemToExclude = findItemById(id);
         Long planId = itemToExclude.getStudyPlan().getId();
-        Weekday day = itemToExclude.getWeekday();
+
+        StudyPlan plan = findStudyPlanById(planId);
+
+        // Se for Híbrido e tiver matéria, estorna o tempo antes de apagar
+        if ("Híbrido".equalsIgnoreCase(plan.getStudyPlanType().getName()) && itemToExclude.getSubject() != null) {
+            studyBalanceService.updateBalance(
+                    plan.getUser().getId(),
+                    itemToExclude.getSubject().getId(),
+                    -itemToExclude.getDurationMinutes() // Valor negativo para retirar do saldo
+            );
+        }
 
         studySessionRepository.deleteByPlanItemId(id); // Deleta as sessões
 
         repository.deleteById(id); // Deleta o item
-
-        recalculateDurations(planId, day); // Recalcula a rotina
 
     }
 
@@ -252,46 +277,6 @@ public class PlanItemService {
 
         repository.resetCycleByStudyPlan(idStudyPlan);
 
-    }
-
-    // Método auxiliar para recalcular a duração de cada item
-    private void recalculateDurations(Long idStudyPlan, Weekday weekday) {
-
-        // Descobre qual é o tipo do plano
-        StudyPlan plan = findStudyPlanById(idStudyPlan);
-        String tipoPlano = plan.getStudyPlanType().getName();
-
-        // Se for Ciclo, ABORTA o cálculo automático, pois o usuário digita a duração na mão
-        if ("Ciclo".equalsIgnoreCase(tipoPlano)) {
-            return;
-        }
-
-        // Pega todos os itens daquele dia ordenados por horário
-        List<PlanItem> items = repository.findByStudyPlanIdAndWeekdayOrderByStartTimeAsc(idStudyPlan, weekday);
-
-        if (items.isEmpty()) return;
-
-        // Percorre a lista calculando a diferença de tempo
-        for (int i = 0; i < items.size(); i++) {
-            PlanItem current = items.get(i);
-
-            // Se NÃO for o último item da lista
-            if (i < items.size() - 1) {
-                PlanItem next = items.get(i + 1);
-
-                // Calcula a diferença em minutos do atual para o próximo
-                long minutes = ChronoUnit.MINUTES.between(current.getStartTime(), next.getStartTime());
-
-                current.setDurationMinutes((int) minutes);
-            } else {
-                // Se for o ÚLTIMO item do dia, ele não tem um "próximo".
-                // Por enquanto: 60 minutos padrão
-                current.setDurationMinutes(60);
-            }
-        }
-
-        // Salva a lista inteira atualizada no banco
-        repository.saveAll(items);
     }
 
     private void subjectAndCustomTileValidation(Subject subject, String customTitle) {

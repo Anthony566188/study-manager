@@ -147,15 +147,11 @@ public class StudySessionService {
 
             if ("Híbrido".equalsIgnoreCase(tipoPlano) && item.getSubject() != null) {
 
-                long minutosPlanejados =
-                        item.getDurationMinutes() != null ? item.getDurationMinutes() : 0;
-                long diferenca = minutosPlanejados - minutosEstudados;
-
-                if (diferenca != 0) {
+                if (minutosEstudados > 0) {
                     studyBalanceService.updateBalance(
-                            existing.getUser()
-                                    .getId(), item
-                                    .getSubject().getId(), (int) diferenca
+                            existing.getUser().getId(),
+                            item.getSubject().getId(),
+                            (int) -minutosEstudados // Valor negativo para esvaziar o pote
                     );
                 }
 
