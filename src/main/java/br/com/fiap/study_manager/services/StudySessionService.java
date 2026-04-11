@@ -35,6 +35,21 @@ public class StudySessionService {
 
     public StudySession addSession(StudySession studySession) {
 
+        // Verifica se a sessão está sendo atrelada a um Item da agenda
+        if (studySession.getPlanItem() != null && studySession.getPlanItem().getId() != null) {
+
+            // Busca o item completo
+            PlanItem item = planItemsRepository.findById(studySession.getPlanItem().getId())
+                    .orElseThrow(() -> new BusinessException("Item de plano não encontrado."));
+
+            String tipoPlano = item.getStudyPlan().getStudyPlanType().getName();
+
+            if ("Rotina Semanal".equalsIgnoreCase(tipoPlano)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Não é possível iniciar uma sessão para o tipo de plano 'Rotina Semanal'");
+            }
+        }
+
         // Pega o ID do usuário que está tentando iniciar a sessão
         Long userId = studySession.getUser().getId();
 
